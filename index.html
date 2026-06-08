@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POLARIS Earth — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg:       #0a0f1a;
+  --bg2:      #111827;
+  --bg3:      #1a2235;
+  --border:   #1e3a5f;
+  --accent:   #00d4ff;
+  --green:    #39ff14;
+  --orange:   #ff6b35;
+  --amber:    #ffbe0b;
+  --blue:     #378add;
+  --text:     #e2e8f0;
+  --muted:    #64748b;
+  --subtle:   #1e293b;
+  --font-mono: 'Space Mono', monospace;
+  --font-sans: 'DM Sans', sans-serif;
+  --r-md: 8px;
+  --r-lg: 12px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,15,26,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 0.5px solid var(--border);
+  padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 52px;
+}
+.logo {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%,100% { box-shadow: 0 0 0 0 rgba(0,212,255,0.5); }
+  50%      { box-shadow: 0 0 0 8px rgba(0,212,255,0); }
+}
+.topbar-right {
+  display: flex; align-items: center; gap: 20px;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px;
+}
+.live-badge {
+  display: flex; align-items: center; gap: 6px;
+  color: var(--green);
+}
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green);
+  animation: blink 1.4s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+.muted-label { color: var(--muted); }
+
+/* ── LAYOUT ── */
+.shell { display: flex; height: calc(100vh - 52px); overflow: hidden; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 220px; flex-shrink: 0;
+  background: var(--bg2);
+  border-right: 0.5px solid var(--border);
+  padding: 20px 0;
+  overflow-y: auto;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.nav-section {
+  font-family: var(--font-mono);
+  font-size: 9px; letter-spacing: 2px;
+  color: var(--muted);
+  padding: 16px 20px 6px;
+  text-transform: uppercase;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 20px;
+  font-size: 13px; color: var(--muted);
+  cursor: pointer; border: none; background: none;
+  width: 100%; text-align: left;
+  border-left: 2px solid transparent;
+  transition: all .18s;
+}
+.nav-item:hover { color: var(--text); background: rgba(255,255,255,.03); }
+.nav-item.active {
+  color: var(--accent);
+  background: rgba(0,212,255,.06);
+  border-left-color: var(--accent);
+}
+.nav-icon { font-size: 16px; width: 18px; }
+
+/* ── MAIN CONTENT ── */
+.content {
+  flex: 1; overflow-y: auto;
+  padding: 28px 32px;
+}
+.page { display: none; animation: fadein .25s ease; }
+.page.active { display: block; }
+@keyframes fadein { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+/* ── PAGE HEADER ── */
+.page-header { margin-bottom: 24px; }
+.page-title {
+  font-family: var(--font-mono);
+  font-size: 18px; font-weight: 700;
+  color: var(--text); margin-bottom: 4px;
+}
+.page-sub { font-size: 13px; color: var(--muted); }
+
+/* ── METRIC CARDS ── */
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 12px; margin-bottom: 24px; }
+.metric-card {
+  background: var(--bg3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 16px;
+}
+.metric-label { font-size: 11px; color: var(--muted); margin-bottom: 8px; font-family: var(--font-mono); letter-spacing: 1px; text-transform: uppercase; }
+.metric-value { font-family: var(--font-mono); font-size: 24px; font-weight: 700; color: var(--accent); }
+.metric-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+/* ── SECTION BLOCK ── */
+.section { margin-bottom: 28px; }
+.section-title {
+  font-family: var(--font-mono);
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 0.5px solid var(--border);
+}
+
+/* ── TABLE ── */
+.table-wrap {
+  overflow-x: auto;
+  border: 0.5px solid var(--border);
+  border-radius: var(--r-lg);
+}
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+thead th {
+  background: var(--bg3);
+  padding: 10px 14px;
+  text-align: left;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 400;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 0.5px solid var(--border);
+  cursor: pointer; user-select: none; white-space: nowrap;
+}
+thead th:hover { color: var(--accent); }
+thead th.sorted { color: var(--accent); }
+tbody td {
+  padding: 9px 14px;
+  border-bottom: 0.5px solid rgba(30,58,95,.5);
+  color: var(--text);
+  white-space: nowrap;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: rgba(0,212,255,.03); }
+
+/* ── PILLS / BADGES ── */
+.pill {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 10px; font-family: var(--font-mono);
+  font-weight: 700; letter-spacing: .5px;
+}
+.pill-critical { background: rgba(255,107,53,.15); color: #ff8c60; border: 0.5px solid rgba(255,107,53,.3); }
+.pill-high     { background: rgba(255,190,11,.12); color: #ffd060; border: 0.5px solid rgba(255,190,11,.3); }
+.pill-medium   { background: rgba(0,212,255,.1);  color: var(--accent); border: 0.5px solid rgba(0,212,255,.2); }
+.pill-low      { background: rgba(57,255,20,.08);  color: #6dff4a; border: 0.5px solid rgba(57,255,20,.2); }
+.pill-success  { background: rgba(57,255,20,.08);  color: #6dff4a; border: 0.5px solid rgba(57,255,20,.2); }
+.pill-danger   { background: rgba(255,107,53,.15); color: #ff8c60; border: 0.5px solid rgba(255,107,53,.3); }
+.pill-info     { background: rgba(55,138,221,.12); color: #7ab8ff; border: 0.5px solid rgba(55,138,221,.3); }
+.pill-hub      { background: rgba(57,255,20,.08);  color: var(--green); border: 0.5px solid rgba(57,255,20,.3); font-size:9px; padding:1px 7px; }
+
+/* ── RISK BAR ── */
+.risk-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.risk-bar-bg { flex:1; height: 5px; background: var(--subtle); border-radius: 3px; min-width: 50px; }
+.risk-bar-fill { height: 5px; border-radius: 3px; }
+.risk-val { font-family: var(--font-mono); font-size: 11px; min-width: 32px; }
+
+/* ── CONTROLS ── */
+.controls { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+.search-box {
+  background: var(--bg3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text);
+  font-family: var(--font-sans); font-size: 13px;
+  padding: 7px 12px;
+  width: 220px;
+  outline: none;
+  transition: border-color .2s;
+}
+.search-box:focus { border-color: var(--accent); }
+.search-box::placeholder { color: var(--muted); }
+select {
+  background: var(--bg3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text);
+  font-family: var(--font-sans); font-size: 13px;
+  padding: 7px 12px;
+  outline: none;
+  cursor: pointer;
+}
+select:focus { border-color: var(--accent); }
+.count-tag { font-family: var(--font-mono); font-size: 10px; color: var(--muted); margin-left: auto; }
+
+/* ── CHART ── */
+.chart-box {
+  background: var(--bg3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 20px;
+  position: relative;
+}
+.chart-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+.legend-swatch { width: 10px; height: 10px; border-radius: 2px; }
+
+/* ── ALGO BARS ── */
+.algo-bar-row {
+  display: grid; grid-template-columns: 130px 1fr 90px;
+  align-items: center; gap: 14px;
+  padding: 8px 0;
+  border-bottom: 0.5px solid rgba(30,58,95,.4);
+}
+.algo-bar-row:last-child { border-bottom: none; }
+.algo-bar-name { font-family: var(--font-mono); font-size: 12px; color: var(--text); }
+.algo-bar-bg { background: var(--subtle); border-radius: 3px; height: 8px; overflow: hidden; }
+.algo-bar-fill { height: 8px; border-radius: 3px; transition: width .8s ease; }
+.algo-bar-val { font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-align: right; }
+
+/* ── ROUTE ITEMS ── */
+.route-list { display: flex; flex-direction: column; gap: 0; }
+.route-item {
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 0.5px solid rgba(30,58,95,.4);
+}
+.route-item:last-child { border-bottom: none; }
+.route-num {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--subtle);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  color: var(--muted); flex-shrink: 0; margin-top: 1px;
+}
+.route-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+.route-meta { font-size: 11px; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
+.route-meta span { display: flex; align-items: center; gap: 3px; }
+
+/* ── STRUCT CARDS ── */
+.struct-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.struct-card {
+  background: var(--bg3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px;
+}
+.struct-name { font-family: var(--font-mono); font-size: 12px; color: var(--blue); margin-bottom: 5px; }
+.struct-use { font-size: 12px; color: var(--muted); margin-bottom: 4px; line-height: 1.5; }
+.struct-complexity { font-family: var(--font-mono); font-size: 10px; color: rgba(0,212,255,.6); }
+
+/* ── TWO COL ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+/* ── APPROVE BUTTON ── */
+.btn-approve {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(57,255,20,.08);
+  border: 0.5px solid var(--green);
+  border-radius: var(--r-md);
+  color: var(--green);
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 1px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all .2s;
+  margin-top: 16px;
+}
+.btn-approve:hover { background: rgba(57,255,20,.15); }
+.approved-msg {
+  display: none;
+  font-family: var(--font-mono); font-size: 11px; color: var(--green);
+  margin-top: 10px; letter-spacing: 1px;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ── TOPBAR ── -->
+<header class="topbar">
+  <div class="logo"><span class="logo-dot"></span>POLARIS EARTH</div>
+  <div class="topbar-right">
+    <span class="live-badge"><span class="live-dot"></span>NASA FIRMS</span>
+    <span class="live-badge"><span class="live-dot"></span>GOES-16</span>
+    <span class="live-badge"><span class="live-dot"></span>Sentinel-2</span>
+    <span class="muted-label" id="clock"></span>
+  </div>
+</header>
+
+<!-- ── SHELL ── -->
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <span class="nav-section">Dados</span>
+    <button class="nav-item active" onclick="showPage('municipios',this)">
+      <span class="nav-icon">🏙</span> Municípios
+    </button>
+    <button class="nav-item" onclick="showPage('rota',this)">
+      <span class="nav-icon">🗺</span> Rota Ótima
+    </button>
+    <span class="nav-section">Algoritmos</span>
+    <button class="nav-item" onclick="showPage('algoritmos',this)">
+      <span class="nav-icon">⚙</span> FB + Greedy
+    </button>
+    <button class="nav-item" onclick="showPage('desempenho',this)">
+      <span class="nav-icon">📊</span> Desempenho
+    </button>
+    <span class="nav-section">Estruturas</span>
+    <button class="nav-item" onclick="showPage('estruturas',this)">
+      <span class="nav-icon">🌲</span> BST + Grafo
+    </button>
+    <span class="nav-section">Projeto</span>
+    <button class="nav-item" onclick="showPage('sobre',this)">
+      <span class="nav-icon">📋</span> Sobre
+    </button>
+  </nav>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- ══ PAGE: MUNICÍPIOS ══ -->
+    <div class="page active" id="page-municipios">
+      <div class="page-header">
+        <div class="page-title">DataFrame — Municípios</div>
+        <div class="page-sub">24 municípios · 2 cenários brasileiros · índice de risco via NASA FIRMS + NDVI</div>
+      </div>
+      <div class="metrics" id="muni-metrics"></div>
+      <div class="section">
+        <div class="section-title">Tabela de municípios</div>
+        <div class="controls">
+          <input class="search-box" type="text" id="muni-search" placeholder="Buscar município..." oninput="filterMunis()">
+          <select onchange="filterMunis()" id="muni-cenario">
+            <option value="all">Todos os cenários</option>
+            <option value="rs">RS — Enchentes</option>
+            <option value="matopiba">MATOPIBA — Seca</option>
+          </select>
+          <select onchange="filterMunis()" id="muni-nivel">
+            <option value="all">Todos os níveis</option>
+            <option value="critical">Crítico (≥ 0.85)</option>
+            <option value="high">Alto (0.70–0.84)</option>
+            <option value="medium">Médio (0.50–0.69)</option>
+          </select>
+          <span class="count-tag" id="muni-count"></span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>#</th>
+              <th onclick="sortMuni('nome')">Município <span id="s-nome">↕</span></th>
+              <th onclick="sortMuni('cenario')">Cenário <span id="s-cenario">↕</span></th>
+              <th onclick="sortMuni('risco')">Índice risco <span id="s-risco">↑</span></th>
+              <th>Nível</th>
+              <th onclick="sortMuni('custo')">Custo atend. <span id="s-custo">↕</span></th>
+              <th onclick="sortMuni('pop')">População <span id="s-pop">↕</span></th>
+              <th>Prior. BST</th>
+            </tr></thead>
+            <tbody id="muni-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PAGE: ROTA ÓTIMA ══ -->
+    <div class="page" id="page-rota">
+      <div class="page-header">
+        <div class="page-title">Rota Ótima de Atendimento</div>
+        <div class="page-sub">Critério guloso: prioridade = risco / distância · 8 equipes no hub</div>
+      </div>
+      <div class="metrics" id="rota-metrics"></div>
+      <div class="two-col">
+        <div class="section">
+          <div class="section-title">Cenário A — Enchentes RS · Hub: Porto Alegre</div>
+          <div class="route-list" id="rota-rs-list"></div>
+        </div>
+        <div class="section">
+          <div class="section-title">Cenário B — Seca MATOPIBA · Hub: Palmas</div>
+          <div class="route-list" id="rota-mb-list"></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Escala de decisão — qualidade × custo computacional</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nível</th><th>Abordagem</th><th>Qualidade</th><th>N máximo</th><th>Tempo típico</th><th>Uso recomendado</th></tr></thead>
+            <tbody id="escala-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <button class="btn-approve" onclick="document.getElementById('approved-msg').style.display='block';this.style.display='none'">
+        ✓ APROVAR E DESPACHAR EQUIPES
+      </button>
+      <div class="approved-msg" id="approved-msg">⬤ MISSÃO ATIVADA — EQUIPES EM ROTA</div>
+    </div>
+
+    <!-- ══ PAGE: ALGORITMOS ══ -->
+    <div class="page" id="page-algoritmos">
+      <div class="page-header">
+        <div class="page-title">Algoritmos — FB + Greedy</div>
+        <div class="page-sub">Força Bruta (N ≤ 12) como baseline · Prim / Dijkstra / Kruskal para produção</div>
+      </div>
+      <div class="two-col">
+        <div class="section">
+          <div class="section-title">MST — Prim (RS) · arestas por peso</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Origem</th><th>Destino</th><th>Peso (h)</th><th>Tipo</th></tr></thead>
+              <tbody id="prim-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">Dijkstra — distâncias mínimas do hub</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Município</th><th>Dist (h)</th><th>Saltos</th><th>Prior. gulosa</th></tr></thead>
+              <tbody id="dijk-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Explosão combinatória — N × operações × viabilidade</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>N</th><th>N! (caminhos)</th><th>2^N (subconj.)</th><th>Tempo FB</th><th>Tempo Greedy</th><th>Viável?</th></tr></thead>
+            <tbody id="explosao-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PAGE: DESEMPENHO ══ -->
+    <div class="page" id="page-desempenho">
+      <div class="page-header">
+        <div class="page-title">Monitor de Desempenho</div>
+        <div class="page-sub">Tempo × N · memória · operações elementares · gap de otimalidade</div>
+      </div>
+      <div class="metrics" id="perf-metrics"></div>
+      <div class="section">
+        <div class="section-title">Tempo de execução × N (ms, escala logarítmica)</div>
+        <div class="chart-box">
+          <div class="chart-legend" id="tempo-legend"></div>
+          <div style="position:relative;height:260px">
+            <canvas id="chart-tempo" role="img" aria-label="Gráfico comparativo de tempo de execução em milissegundos por N para Força Bruta, Prim, Dijkstra e Kruskal. FB explode fatorialmente a partir de N=12."></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="two-col" style="margin-top:20px">
+        <div class="section">
+          <div class="section-title">Operações elementares (N=12)</div>
+          <div class="chart-box" id="ops-chart"></div>
+        </div>
+        <div class="section">
+          <div class="section-title">Gap de otimalidade — FB vs Dijkstra</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>N</th><th>FB ótimo</th><th>Dijkstra</th><th>Gap</th><th>Avaliação</th></tr></thead>
+              <tbody id="gap-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PAGE: ESTRUTURAS ══ -->
+    <div class="page" id="page-estruturas">
+      <div class="page-header">
+        <div class="page-title">Estruturas de Dados</div>
+        <div class="page-sub">Implementadas do zero em Python · justificativa de complexidade</div>
+      </div>
+      <div class="metrics" id="struct-metrics"></div>
+      <div class="section">
+        <div class="section-title">Estruturas implementadas</div>
+        <div class="struct-grid" id="struct-cards"></div>
+      </div>
+      <div class="two-col" style="margin-top:20px">
+        <div class="section">
+          <div class="section-title">Lista de adjacência vs. matriz</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Operação</th><th>Lista (usada)</th><th>Matriz</th><th>Vantagem</th></tr></thead>
+              <tbody id="adj-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">BST — balanceamento por cenário</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Cenário</th><th>n</th><th>Altura</th><th>h ideal</th><th>Razão</th><th>Status</th></tr></thead>
+              <tbody id="bst-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PAGE: SOBRE ══ -->
+    <div class="page" id="page-sobre">
+      <div class="page-header">
+        <div class="page-title">Sobre o Projeto</div>
+        <div class="page-sub">FIAP — Global Solution 2026 · Estruturas de Dados e Algoritmos</div>
+      </div>
+      <div class="section">
+        <div class="section-title">Identificação do grupo</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>RM</th><th>Nome</th><th>Turma</th></tr></thead>
+            <tbody>
+              <tr><td style="font-family:var(--font-mono)">565032</td><td>William Queiroz</td><td style="font-family:var(--font-mono);color:var(--blue)">2ESPH</td></tr>
+              <tr><td style="font-family:var(--font-mono)">565017</td><td>Ronaldo Aparecido</td><td style="font-family:var(--font-mono);color:var(--blue)">2ESPH</td></tr>
+              <tr><td style="font-family:var(--font-mono)">561749</td><td>Eduardo Delorenzo</td><td style="font-family:var(--font-mono);color:var(--blue)">2ESPH</td></tr>
+            <tr><td style="font-family:var(--font-mono)">562994</td><td>Lucas Abat</td><td style="font-family:var(--font-mono);color:var(--blue)">2ESPH</td></tr>
+            <tr><td style="font-family:var(--font-mono)">563211</td><td>Kaue de Almeida</td><td style="font-family:var(--font-mono);color:var(--blue)">2ESPH</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Arquitetura do projeto</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Arquivo</th><th>Responsabilidade</th><th>Estruturas-chave</th></tr></thead>
+            <tbody>
+              <tr><td style="font-family:var(--font-mono)">data_structures.py</td><td>Grafo, BST, vértices, arestas</td><td>dict, list, tuple, set, BinarySearchTree</td></tr>
+              <tr><td style="font-family:var(--font-mono)">brute_force.py</td><td>Enumeração completa + baseline</td><td>recursão, backtracking, itertools</td></tr>
+              <tr><td style="font-family:var(--font-mono)">greedy.py</td><td>Prim, Dijkstra, Kruskal, rota</td><td>heapq, dict, set, UnionFind</td></tr>
+              <tr><td style="font-family:var(--font-mono)">performance_monitor.py</td><td>Tempo, memória, operações</td><td>time.perf_counter, tracemalloc</td></tr>
+              <tr><td style="font-family:var(--font-mono)">visualizations.py</td><td>5 figuras obrigatórias</td><td>networkx, matplotlib</td></tr>
+              <tr><td style="font-family:var(--font-mono)">main.py</td><td>Ponto de entrada CLI</td><td>argparse, todos os módulos</td></tr>
+              <tr><td style="font-family:var(--font-mono)">dashboard/index.html</td><td>Dashboard interativo (este)</td><td>Chart.js, HTML/CSS/JS puro</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Cenários brasileiros</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Cenário</th><th>Região</th><th>Fonte de dados</th><th>Problema resolvido</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="pill pill-info">A</span> Enchentes RS</td>
+                <td>Rio Grande do Sul</td>
+                <td>DNIT + Defesa Civil RS</td>
+                <td>MST cobertura + Dijkstra rotas</td>
+              </tr>
+              <tr>
+                <td><span class="pill pill-high">B</span> Seca MATOPIBA</td>
+                <td>MA, TO, PI, BA</td>
+                <td>NDVI MODIS/NASA + INMET</td>
+                <td>BST triagem + Greedy orçamento</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">ODS da ONU atendidos</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <span class="pill pill-info">ODS 2 — Fome zero</span>
+          <span class="pill pill-medium">ODS 9 — Infraestrutura</span>
+          <span class="pill pill-high">ODS 11 — Cidades sustentáveis</span>
+          <span class="pill pill-critical">ODS 13 — Ação climática</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ── DATA ─────────────────────────────────────
+const MUNIS = [
+  {id:4314902,nome:"Porto Alegre",cenario:"rs",risco:0.89,custo:1850,pop:1400000,hub:true},
+  {id:4304606,nome:"Canoas",cenario:"rs",risco:0.95,custo:980,pop:356000},
+  {id:4313409,nome:"Pelotas",cenario:"rs",risco:0.72,custo:620,pop:328000},
+  {id:4305108,nome:"Caxias do Sul",cenario:"rs",risco:0.61,custo:840,pop:510000},
+  {id:4316808,nome:"Santa Maria",cenario:"rs",risco:0.78,custo:520,pop:277000},
+  {id:4307708,nome:"Gravataí",cenario:"rs",risco:0.91,custo:760,pop:255000},
+  {id:4322400,nome:"Viamão",cenario:"rs",risco:0.85,custo:580,pop:239000},
+  {id:4318705,nome:"São Leopoldo",cenario:"rs",risco:0.77,custo:490,pop:214000},
+  {id:4315602,nome:"Rio Grande",cenario:"rs",risco:0.68,custo:410,pop:208000},
+  {id:4300604,nome:"Alvorada",cenario:"rs",risco:0.93,custo:440,pop:196000},
+  {id:4313375,nome:"Novo Hamburgo",cenario:"rs",risco:0.74,custo:460,pop:247000},
+  {id:4304614,nome:"Charqueadas",cenario:"rs",risco:0.87,custo:280,pop:38000},
+  {id:1721000,nome:"Palmas",cenario:"matopiba",risco:0.68,custo:1500,pop:310000,hub:true},
+  {id:2903201,nome:"Barreiras",cenario:"matopiba",risco:0.91,custo:870,pop:160000},
+  {id:2105302,nome:"Imperatriz",cenario:"matopiba",risco:0.77,custo:780,pop:258000},
+  {id:2911501,nome:"Luís Eduardo Magalhães",cenario:"matopiba",risco:0.96,custo:430,pop:82000},
+  {id:2100956,nome:"Balsas",cenario:"matopiba",risco:0.88,custo:390,pop:86000},
+  {id:2211100,nome:"Uruçuí",cenario:"matopiba",risco:0.84,custo:320,pop:22000},
+  {id:2904753,nome:"Formosa do Rio Preto",cenario:"matopiba",risco:0.79,custo:260,pop:14000},
+  {id:2907806,nome:"Correntina",cenario:"matopiba",risco:0.73,custo:240,pop:30000},
+  {id:1712702,nome:"Wanderlândia",cenario:"matopiba",risco:0.62,custo:180,pop:12000},
+  {id:1702109,nome:"Araguaína",cenario:"matopiba",risco:0.70,custo:210,pop:181000},
+  {id:1716604,nome:"Paraíso do Tocantins",cenario:"matopiba",risco:0.74,custo:195,pop:47000},
+  {id:1712405,nome:"Dianópolis",cenario:"matopiba",risco:0.81,custo:170,pop:22000},
+];
+
+const PRIM_EDGES = [
+  {u:"Porto Alegre",v:"Alvorada",w:0.2},{u:"Gravataí",v:"Canoas",w:0.3},
+  {u:"Alvorada",v:"Gravataí",w:0.3},{u:"Porto Alegre",v:"Viamão",w:0.3},
+  {u:"São Leopoldo",v:"Novo Hamburgo",w:0.3},{u:"Canoas",v:"São Leopoldo",w:0.5},
+  {u:"Porto Alegre",v:"Charqueadas",w:0.7},{u:"Charqueadas",v:"Santa Maria",w:0.8},
+  {u:"Novo Hamburgo",v:"Caxias do Sul",w:1.8},
+];
+
+const DIJK = [
+  {nome:"Porto Alegre",dist:0.00,saltos:1,hub:true,risco:0.89},
+  {nome:"Alvorada",dist:0.20,saltos:2,risco:0.93},
+  {nome:"Viamão",dist:0.30,saltos:2,risco:0.85},
+  {nome:"Gravataí",dist:0.40,saltos:2,risco:0.91},
+  {nome:"Canoas",dist:0.60,saltos:2,risco:0.95},
+  {nome:"Charqueadas",dist:0.70,saltos:2,risco:0.87},
+  {nome:"Novo Hamburgo",dist:1.00,saltos:3,risco:0.74},
+  {nome:"São Leopoldo",dist:1.10,saltos:3,risco:0.77},
+  {nome:"Santa Maria",dist:1.50,saltos:3,risco:0.78},
+  {nome:"Caxias do Sul",dist:2.80,saltos:4,risco:0.61},
+];
+
+const EXPLOSAO = [
+  {n:5,fat:"120",pow:"32",tFB:"<0.01ms",tG:"<0.1ms",ok:true},
+  {n:8,fat:"40.320",pow:"256",tFB:"4ms",tG:"<0.1ms",ok:true},
+  {n:10,fat:"3.628.800",pow:"1.024",tFB:"360ms",tG:"<0.1ms",ok:true},
+  {n:12,fat:"479.001.600",pow:"4.096",tFB:"47.9s",tG:"<0.1ms",ok:true},
+  {n:20,fat:"2.4×10¹⁸",pow:"1.048.576",tFB:">1h",tG:"<0.2ms",ok:false},
+  {n:50,fat:">10⁶⁴",pow:">10¹⁵",tFB:">∞",tG:"<1ms",ok:false},
+  {n:100,fat:">10¹⁵⁷",pow:">10³⁰",tFB:">∞",tG:"<3ms",ok:false},
+];
+
+const PERF_NS  = [5,8,10,12,20,50,100];
+const PERF_PRIM= [0.02,0.03,0.03,0.04,0.06,0.18,0.55];
+const PERF_DIJK= [0.01,0.02,0.02,0.03,0.05,0.15,0.48];
+const PERF_KRU = [0.03,0.05,0.06,0.07,0.12,0.32,0.90];
+const PERF_FB  = [0.08,1.20,18.4,184,null,null,null];
+
+const GAP_DATA = [
+  {n:5,fb:0.82,g:0.82,gap:0.00},{n:6,fb:1.10,g:1.10,gap:0.00},
+  {n:7,fb:0.95,g:0.95,gap:0.00},{n:8,fb:1.30,g:1.30,gap:0.00},
+  {n:9,fb:1.05,g:1.05,gap:0.00},{n:10,fb:1.45,g:1.47,gap:1.38},
+  {n:11,fb:1.20,g:1.20,gap:0.00},{n:12,fb:0.90,g:0.92,gap:2.22},
+];
+
+const ROTA_RS = [
+  {o:1,n:"Alvorada",r:0.93,d:0.20,p:3.10},
+  {o:2,n:"Viamão",r:0.85,d:0.30,p:2.13},
+  {o:3,n:"Gravataí",r:0.91,d:0.40,p:1.82},
+  {o:4,n:"Canoas",r:0.95,d:0.60,p:1.36},
+  {o:5,n:"Charqueadas",r:0.87,d:0.70,p:1.09},
+  {o:6,n:"Novo Hamburgo",r:0.74,d:1.00,p:0.67},
+  {o:7,n:"São Leopoldo",r:0.77,d:1.10,p:0.64},
+  {o:8,n:"Santa Maria",r:0.78,d:1.50,p:0.49},
+];
+
+const ROTA_MB = [
+  {o:1,n:"Paraíso do Tocantins",r:0.74,d:0.90,p:0.74},
+  {o:2,n:"Uruçuí",r:0.84,d:1.10,p:0.70},
+  {o:3,n:"Formosa do Rio Preto",r:0.79,d:1.50,p:0.49},
+  {o:4,n:"Dianópolis",r:0.81,d:1.60,p:0.48},
+  {o:5,n:"Barreiras",r:0.91,d:2.30,p:0.38},
+  {o:6,n:"Luís Eduardo Mag.",r:0.96,d:2.60,p:0.36},
+  {o:7,n:"Balsas",r:0.88,d:2.50,p:0.34},
+  {o:8,n:"Imperatriz",r:0.77,d:2.10,p:0.35},
+];
+
+const ESCALA = [
+  {nivel:"1 — Ótimo",algo:"Força Bruta",qual:"100% ótimo global",nmax:"N ≤ 12",tempo:"ms → horas",rec:"Validação/testes",cls:"pill-critical"},
+  {nivel:"2 — Excelente",algo:"Dijkstra",qual:"≈ 0% gap",nmax:"N ≤ 10.000",tempo:"< 50ms",rec:"Produção: rota hub",cls:"pill-success"},
+  {nivel:"3 — Bom",algo:"Prim MST",qual:"< 5% gap",nmax:"N ≤ 10.000",tempo:"< 30ms",rec:"Produção: cobertura",cls:"pill-info"},
+  {nivel:"4 — Aceitável",algo:"Kruskal MST",qual:"≈ Prim",nmax:"N ≤ 5.000",tempo:"< 80ms",rec:"Grafos esparsos",cls:"pill-high"},
+];
+
+const ESTRUTURAS = [
+  {n:"list",u:"Lista de adjacência do grafo; resultado de BFS",c:"Espaço O(V+E); iteração O(grau(v))"},
+  {n:"tuple",u:"Vértice (id, nome, risco, custo, pop); aresta (u,v,w)",c:"Imutável; acesso por índice O(1)"},
+  {n:"dict",u:"Adjacência ponderada; custos/predecessores Dijkstra",c:"Acesso O(1) por id_município"},
+  {n:"set",u:"Nós visitados BFS/DFS; fronteira Greedy",c:"Pertencimento O(1) amortizado"},
+  {n:"deque",u:"Fila BFS para travessia por largura",c:"append/popleft O(1) vs list O(n)"},
+  {n:"heapq",u:"Fila de prioridade Prim e Dijkstra",c:"Extrai mínimo O(log V)"},
+  {n:"BinarySearchTree",u:"Municípios ordenados por risco; busca por intervalo",c:"Busca O(h); in-order O(n)"},
+  {n:"UnionFind",u:"Detecção de ciclos no Kruskal",c:"Encontrar/Unir ≈ O(α(n)) ≈ O(1)"},
+];
+
+const ADJ_COMP = [
+  {op:"Espaço total",lista:"O(V + E)",matriz:"O(V²)",v:"Lista"},
+  {op:"Listar vizinhos",lista:"O(grau(v))",matriz:"O(V)",v:"Lista"},
+  {op:"Checar aresta (u,v)",lista:"O(grau(u))",matriz:"O(1)",v:"Matriz"},
+  {op:"Inserir aresta",lista:"O(1)",matriz:"O(1)",v:"Empate"},
+  {op:"Adequação ao projeto",lista:"Grafos esparsos ✓",matriz:"Grafos densos",v:"Lista ✓"},
+];
+
+const BST_DATA = [
+  {c:"RS — Enchentes",n:12,h:4,hi:3.7,r:1.08,s:"Bem balanceada"},
+  {c:"MATOPIBA — Seca",n:12,h:6,hi:3.7,r:1.62,s:"Mod. desbalanceada"},
+];
+
+// ── HELPERS ─────────────────────────────────
+function nivelRisco(r){
+  if(r>=0.85) return {l:"Crítico",c:"pill-critical"};
+  if(r>=0.70) return {l:"Alto",c:"pill-high"};
+  if(r>=0.50) return {l:"Médio",c:"pill-medium"};
+  return {l:"Baixo",c:"pill-low"};
+}
+function fmtPop(p){ return p>=1e6?(p/1e6).toFixed(1)+"M":p>=1000?(p/1000).toFixed(0)+"k":p; }
+function riskColor(r){ return r>=0.85?"#ff6b35":r>=0.70?"#ffbe0b":"#00d4ff"; }
+
+// ── NAV ──────────────────────────────────────
+function showPage(id, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+
+// ── CLOCK ────────────────────────────────────
+function updateClock(){
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleDateString('pt-BR')+" "+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+" UTC-3";
+}
+setInterval(updateClock,1000); updateClock();
+
+// ── MUNICÍPIOS ───────────────────────────────
+let muniSortKey="risco", muniSortAsc=false, muniFiltered=[...MUNIS];
+
+function filterMunis(){
+  const q = document.getElementById('muni-search').value.toLowerCase();
+  const sc = document.getElementById('muni-cenario').value;
+  const nv = document.getElementById('muni-nivel').value;
+  muniFiltered = MUNIS.filter(m=>{
+    if(q && !m.nome.toLowerCase().includes(q)) return false;
+    if(sc!=='all' && m.cenario!==sc) return false;
+    if(nv==='critical' && m.risco<0.85) return false;
+    if(nv==='high' && (m.risco<0.70||m.risco>=0.85)) return false;
+    if(nv==='medium' && (m.risco<0.50||m.risco>=0.70)) return false;
+    return true;
+  });
+  renderMuniTable();
+}
+
+function sortMuni(key){
+  if(muniSortKey===key) muniSortAsc=!muniSortAsc;
+  else{ muniSortKey=key; muniSortAsc=key==='nome'||key==='cenario'; }
+  renderMuniTable();
+}
+
+function renderMuniTable(){
+  const sorted=[...muniFiltered].sort((a,b)=>{
+    let va=a[muniSortKey]??'', vb=b[muniSortKey]??'';
+    if(typeof va==='string') return muniSortAsc?va.localeCompare(vb):vb.localeCompare(va);
+    return muniSortAsc?va-vb:vb-va;
+  });
+  const body=document.getElementById('muni-body');
+  body.innerHTML = sorted.map((m,i)=>{
+    const nr=nivelRisco(m.risco);
+    const prior=(m.risco/(m.custo/500+0.1)).toFixed(2);
+    const rc=riskColor(m.risco);
+    return `<tr>
+      <td style="color:var(--muted);font-family:var(--font-mono);font-size:11px">${i+1}</td>
+      <td>
+        <span style="font-weight:500">${m.nome}</span>
+        ${m.hub?` <span class="pill pill-hub">HUB</span>`:''}
+      </td>
+      <td><span class="pill pill-${m.cenario==='rs'?'info':'high'}">${m.cenario==='rs'?'RS':'MATOPIBA'}</span></td>
+      <td>
+        <div class="risk-bar-wrap">
+          <div class="risk-bar-bg"><div class="risk-bar-fill" style="width:${m.risco*100}%;background:${rc}"></div></div>
+          <span class="risk-val" style="color:${rc}">${m.risco.toFixed(2)}</span>
+        </div>
+      </td>
+      <td><span class="pill ${nr.c}">${nr.l}</span></td>
+      <td style="font-family:var(--font-mono)">R$${m.custo.toLocaleString('pt-BR')}</td>
+      <td style="font-family:var(--font-mono)">${fmtPop(m.pop)}</td>
+      <td style="font-family:var(--font-mono);color:var(--muted)">${prior}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('muni-count').textContent=`${sorted.length} / ${MUNIS.length} municípios`;
+}
+
+function renderMuniMetrics(){
+  const criticos=MUNIS.filter(m=>m.risco>=0.85).length;
+  const avg=(MUNIS.reduce((s,m)=>s+m.risco,0)/MUNIS.length).toFixed(3);
+  const popTotal=MUNIS.reduce((s,m)=>s+m.pop,0);
+  document.getElementById('muni-metrics').innerHTML=`
+    <div class="metric-card"><div class="metric-label">Total municípios</div><div class="metric-value">${MUNIS.length}</div><div class="metric-sub">2 cenários</div></div>
+    <div class="metric-card"><div class="metric-label">Risco médio</div><div class="metric-value">${avg}</div><div class="metric-sub">escala 0–1</div></div>
+    <div class="metric-card"><div class="metric-label">Status crítico</div><div class="metric-value" style="color:var(--orange)">${criticos}</div><div class="metric-sub">risco ≥ 0.85</div></div>
+    <div class="metric-card"><div class="metric-label">População total</div><div class="metric-value">${(popTotal/1e6).toFixed(1)}M</div><div class="metric-sub">habitantes em risco</div></div>
+  `;
+}
+
+// ── ROTA ─────────────────────────────────────
+function renderRota(){
+  document.getElementById('rota-metrics').innerHTML=`
+    <div class="metric-card"><div class="metric-label">Municípios cobertos RS</div><div class="metric-value">8</div><div class="metric-sub">custo 5.80h</div></div>
+    <div class="metric-card"><div class="metric-label">Municípios cobertos MB</div><div class="metric-value">8</div><div class="metric-sub">custo 18.20h</div></div>
+    <div class="metric-card"><div class="metric-label">Critério guloso</div><div class="metric-value" style="font-size:16px">risco/dist</div><div class="metric-sub">razão benefício-custo</div></div>
+    <div class="metric-card"><div class="metric-label">Equipes no hub</div><div class="metric-value">8</div><div class="metric-sub">por cenário</div></div>
+  `;
+  function routeHTML(rota){
+    return rota.map(p=>{
+      const nr=nivelRisco(p.r);
+      return `<div class="route-item">
+        <div class="route-num">${p.o}</div>
+        <div>
+          <div class="route-name">${p.n}</div>
+          <div class="route-meta">
+            <span>risco <strong style="color:${riskColor(p.r)}">${p.r.toFixed(2)}</strong></span>
+            <span>dist <strong>${p.d.toFixed(2)}h</strong></span>
+            <span style="font-family:var(--font-mono)">prior ${p.p.toFixed(2)}</span>
+            <span class="pill ${nr.c}">${nr.l}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('rota-rs-list').innerHTML = routeHTML(ROTA_RS);
+  document.getElementById('rota-mb-list').innerHTML = routeHTML(ROTA_MB);
+  document.getElementById('escala-body').innerHTML = ESCALA.map(e=>`<tr>
+    <td style="font-weight:500;font-size:12px">${e.nivel}</td>
+    <td style="font-family:var(--font-mono);font-size:12px">${e.algo}</td>
+    <td><span class="pill ${e.cls}">${e.qual}</span></td>
+    <td style="font-family:var(--font-mono);font-size:12px">${e.nmax}</td>
+    <td style="font-family:var(--font-mono);font-size:12px;color:var(--green)">${e.tempo}</td>
+    <td style="font-size:12px;color:var(--muted)">${e.rec}</td>
+  </tr>`).join('');
+}
+
+// ── ALGORITMOS ───────────────────────────────
+function renderAlgoritmos(){
+  document.getElementById('prim-body').innerHTML = PRIM_EDGES.map(e=>`<tr>
+    <td>${e.u}</td><td>${e.v}</td>
+    <td style="font-family:var(--font-mono)">${e.w.toFixed(1)}h</td>
+    <td><span class="pill pill-success">MST</span></td>
+  </tr>`).join('');
+
+  document.getElementById('dijk-body').innerHTML = DIJK.map(d=>`<tr>
+    <td>${d.nome}${d.hub?' <span class="pill pill-hub">HUB</span>':''}</td>
+    <td style="font-family:var(--font-mono)">${d.dist.toFixed(2)}h</td>
+    <td style="font-family:var(--font-mono)">${d.saltos}</td>
+    <td style="font-family:var(--font-mono);color:var(--muted)">${d.dist>0?(d.risco/(d.dist+0.1)).toFixed(3):'—'}</td>
+  </tr>`).join('');
+
+  document.getElementById('explosao-body').innerHTML = EXPLOSAO.map(d=>`<tr>
+    <td style="font-family:var(--font-mono);font-weight:700">${d.n}</td>
+    <td style="font-family:var(--font-mono);font-size:11px;color:${d.ok?'var(--text)':'var(--orange)'}">${d.fat}</td>
+    <td style="font-family:var(--font-mono);font-size:11px">${d.pow}</td>
+    <td style="font-family:var(--font-mono);font-size:11px;color:${d.ok?'var(--text)':'var(--orange)'}">${d.tFB}</td>
+    <td style="font-family:var(--font-mono);font-size:11px;color:var(--green)">${d.tG}</td>
+    <td>${d.ok?'<span class="pill pill-success">Viável</span>':'<span class="pill pill-danger">Inviável</span>'}</td>
+  </tr>`).join('');
+}
+
+// ── DESEMPENHO ───────────────────────────────
+function renderDesempenho(){
+  document.getElementById('perf-metrics').innerHTML=`
+    <div class="metric-card"><div class="metric-label">Prim N=100</div><div class="metric-value">0.55ms</div><div class="metric-sub">O((V+E) log V)</div></div>
+    <div class="metric-card"><div class="metric-label">Dijkstra N=100</div><div class="metric-value">0.48ms</div><div class="metric-sub">O((V+E) log V)</div></div>
+    <div class="metric-card"><div class="metric-label">FB inviável a partir de</div><div class="metric-value" style="color:var(--orange)">N≈20</div><div class="metric-sub">N! combinatório</div></div>
+    <div class="metric-card"><div class="metric-label">Gap médio Greedy</div><div class="metric-value" style="color:var(--green)">0.45%</div><div class="metric-sub">vs. ótimo global</div></div>
+  `;
+
+  const ctx = document.getElementById('chart-tempo').getContext('2d');
+  new Chart(ctx,{
+    type:'line',
+    data:{
+      labels: PERF_NS.map(String),
+      datasets:[
+        {label:'Força Bruta',data:PERF_FB,borderColor:'#ff6b35',backgroundColor:'rgba(255,107,53,.06)',borderWidth:2,pointRadius:4,spanGaps:false,borderDash:[5,3]},
+        {label:'Prim',data:PERF_PRIM,borderColor:'#39ff14',backgroundColor:'rgba(57,255,20,.06)',borderWidth:2,pointRadius:4},
+        {label:'Dijkstra',data:PERF_DIJK,borderColor:'#00d4ff',backgroundColor:'rgba(0,212,255,.06)',borderWidth:2,pointRadius:4},
+        {label:'Kruskal',data:PERF_KRU,borderColor:'#ffbe0b',backgroundColor:'rgba(255,190,11,.06)',borderWidth:2,pointRadius:4},
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        y:{type:'logarithmic',grid:{color:'rgba(30,58,95,.6)'},ticks:{color:'#64748b',callback:v=>v+'ms'}},
+        x:{grid:{color:'rgba(30,58,95,.6)'},ticks:{color:'#64748b'}}
+      }
+    }
+  });
+
+  const legendData=[{c:'#ff6b35',l:'Força Bruta'},{c:'#39ff14',l:'Prim'},{c:'#00d4ff',l:'Dijkstra'},{c:'#ffbe0b',l:'Kruskal'}];
+  document.getElementById('tempo-legend').innerHTML = legendData.map(d=>
+    `<span class="legend-item"><span class="legend-swatch" style="background:${d.c}"></span>${d.l}</span>`
+  ).join('');
+
+  const opsData=[
+    {a:'Força Bruta',ops:184000,c:'#ff6b35'},
+    {a:'Kruskal',ops:14,c:'#ffbe0b'},
+    {a:'Prim',ops:25,c:'#39ff14'},
+    {a:'Dijkstra',ops:28,c:'#00d4ff'},
+  ];
+  const maxOps=Math.max(...opsData.map(d=>d.ops));
+  document.getElementById('ops-chart').innerHTML=`
+    <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1px;color:var(--muted);margin-bottom:14px">OPERAÇÕES ELEMENTARES (N=12)</div>
+    ${opsData.map(d=>`<div class="algo-bar-row">
+      <span class="algo-bar-name">${d.a}</span>
+      <div class="algo-bar-bg"><div class="algo-bar-fill" style="width:${Math.max(1,(d.ops/maxOps*100)).toFixed(1)}%;background:${d.c}"></div></div>
+      <span class="algo-bar-val">${d.ops.toLocaleString()}</span>
+    </div>`).join('')}
+  `;
+
+  document.getElementById('gap-body').innerHTML = GAP_DATA.map(d=>{
+    const cls=d.gap<0.01?'pill-success':d.gap<5?'pill-info':'pill-high';
+    const lbl=d.gap<0.01?'Ótimo':d.gap<5?'Excelente':'Bom';
+    return `<tr>
+      <td style="font-family:var(--font-mono);font-weight:700">${d.n}</td>
+      <td style="font-family:var(--font-mono)">${d.fb.toFixed(2)}h</td>
+      <td style="font-family:var(--font-mono)">${d.g.toFixed(2)}h</td>
+      <td style="font-family:var(--font-mono)">${d.gap.toFixed(2)}%</td>
+      <td><span class="pill ${cls}">${lbl}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── ESTRUTURAS ───────────────────────────────
+function renderEstruturas(){
+  document.getElementById('struct-metrics').innerHTML=`
+    <div class="metric-card"><div class="metric-label">Estruturas implementadas</div><div class="metric-value">8</div><div class="metric-sub">do zero, sem libs externas</div></div>
+    <div class="metric-card"><div class="metric-label">Espaço do grafo</div><div class="metric-value" style="font-size:18px">O(V+E)</div><div class="metric-sub">lista de adjacência</div></div>
+    <div class="metric-card"><div class="metric-label">BST altura (RS)</div><div class="metric-value">4</div><div class="metric-sub">razão 1.08 — bem balanceada</div></div>
+    <div class="metric-card"><div class="metric-label">heapq min extração</div><div class="metric-value" style="font-size:18px">O(log V)</div><div class="metric-sub">Prim e Dijkstra</div></div>
+  `;
+  document.getElementById('struct-cards').innerHTML = ESTRUTURAS.map(s=>`
+    <div class="struct-card">
+      <div class="struct-name">${s.n}</div>
+      <div class="struct-use">${s.u}</div>
+      <div class="struct-complexity">${s.c}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('adj-body').innerHTML = ADJ_COMP.map(r=>`<tr>
+    <td style="font-weight:500">${r.op}</td>
+    <td style="font-family:var(--font-mono);font-size:11px;color:${r.v.includes('Lista')?'var(--green)':'var(--text)'}">${r.lista}</td>
+    <td style="font-family:var(--font-mono);font-size:11px;color:${r.v==='Matriz'?'var(--green)':'var(--text)'}">${r.matriz}</td>
+    <td><span class="pill ${r.v.includes('Lista')?'pill-success':r.v==='Empate'?'pill-info':'pill-high'}">${r.v}</span></td>
+  </tr>`).join('');
+
+  document.getElementById('bst-body').innerHTML = BST_DATA.map(b=>`<tr>
+    <td style="font-weight:500">${b.c}</td>
+    <td style="font-family:var(--font-mono)">${b.n}</td>
+    <td style="font-family:var(--font-mono)">${b.h}</td>
+    <td style="font-family:var(--font-mono)">${b.hi}</td>
+    <td style="font-family:var(--font-mono)">${b.r.toFixed(2)}</td>
+    <td><span class="pill ${b.r<1.5?'pill-success':'pill-high'}">${b.s}</span></td>
+  </tr>`).join('');
+}
+
+// ── INIT ─────────────────────────────────────
+renderMuniMetrics();
+renderMuniTable();
+renderRota();
+renderAlgoritmos();
+renderDesempenho();
+renderEstruturas();
+</script>
+</body>
+</html>
