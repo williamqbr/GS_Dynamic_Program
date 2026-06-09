@@ -89,6 +89,7 @@ python src/main.py --figuras      # Gera as 5 figuras obrigatórias em report/
 ### Dashboard interativo
 
 Para acessar o dashboard acesse pelo link abaixo: <br>
+ https://williamqbr.github.io/GS_Dynamic_Program/
 
 ---
 
