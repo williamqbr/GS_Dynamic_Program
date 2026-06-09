@@ -17,7 +17,6 @@ Uso:
     python main.py --figuras    # só gera as figuras
 """
 
-import sys
 import time
 
 '''def checar_dependencias():
@@ -46,20 +45,20 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(__file__))
 
-from data_structures import (
+from src.data_structures import (
     carregar_cenario_rs, carregar_cenario_matopiba
 )
-from brute_force import (
+from src.brute_force import (
     forca_bruta_caminhos, forca_bruta_cobertura,
     imprimir_tabela_explosao, calcular_gap_otimalidade
 )
-from greedy import (
+from src.greedy import (
     prim_mst, dijkstra, kruskal_mst,
     reconstruir_mst_arestas, reconstruir_caminho,
     rota_gulosa_atendimento
 )
-from performance_monitor import benchmark_completo, resumo_escalabilidade
-from visualizations import gerar_todas_as_figuras
+from src.performance_monitor import benchmark_completo, resumo_escalabilidade
+from src.visualizations import gerar_todas_as_figuras
 
 
 BANNER = """

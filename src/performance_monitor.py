@@ -2,11 +2,10 @@ from __future__ import annotations
 import time
 import tracemalloc
 import random
-import math
-from dataclasses import dataclass, field
-from data_structures import Grafo, BinarySearchTree, criar_vertice, criar_aresta
-from brute_force import forca_bruta_caminhos, analisar_explosao_combinatoria
-from greedy import prim_mst, dijkstra, kruskal_mst
+from dataclasses import dataclass
+from src.data_structures import Grafo, BinarySearchTree, criar_vertice
+from src.brute_force import forca_bruta_caminhos
+from src.greedy import prim_mst, dijkstra, kruskal_mst
 
 
 
@@ -267,7 +266,7 @@ if __name__ == "__main__":
 
     resumo_escalabilidade(resultados)
 
-    from brute_force import imprimir_tabela_explosao
+    from src.brute_force import imprimir_tabela_explosao
     imprimir_tabela_explosao()
 
     dados = dados_para_graficos(resultados)

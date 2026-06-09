@@ -5,20 +5,18 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-import matplotlib.patheffects as pe
 import networkx as nx
 import numpy as np
 
-from data_structures import (
-    Grafo, BinarySearchTree, Node,
+from src.data_structures import (
+    Node,
     carregar_cenario_rs, carregar_cenario_matopiba
 )
-from greedy import prim_mst, reconstruir_mst_arestas, dijkstra, rota_gulosa_atendimento
-from brute_force import (
-    forca_bruta_caminhos, analisar_explosao_combinatoria,
-    calcular_gap_otimalidade, _dijkstra_distancias
+from src.greedy import prim_mst, reconstruir_mst_arestas, dijkstra
+from src.brute_force import (
+    forca_bruta_caminhos, calcular_gap_otimalidade
 )
-from performance_monitor import benchmark_completo, dados_para_graficos
+from src.performance_monitor import benchmark_completo, dados_para_graficos
 
 # Paleta POLARIS Earth
 COR_CRITICO  = "#FF6B35"
@@ -422,7 +420,7 @@ def figura_gap_otimalidade() -> str:
     """
     _estilo_polaris()
 
-    from performance_monitor import gerar_grafo_sintetico
+    from src.performance_monitor import gerar_grafo_sintetico
 
     tamanhos = [5, 6, 7, 8, 9, 10, 11, 12]
     gaps: list[float] = []
