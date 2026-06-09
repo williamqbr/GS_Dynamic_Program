@@ -71,7 +71,7 @@ pip install -r requirements.txt
 
 ---
 
-## ▶️ Como Executar
+##  Como Executar
 
 Todos os módulos são acessados pelo `main.py` via flags. Execute a partir da raiz do projeto:
 
@@ -92,7 +92,7 @@ Para acessar o dashboard acesse pelo link abaixo: <br>
 
 ---
 
-## 🧩 Descrição dos Módulos
+##  Descrição dos Módulos
 
 | Módulo | Responsabilidade |
 |--------|-----------------|
@@ -104,7 +104,7 @@ Para acessar o dashboard acesse pelo link abaixo: <br>
 
 ---
 
-## 🗺️ Fontes de Dados
+##  Fontes de Dados
 
 | Fonte | Dado utilizado | URL |
 |-------|---------------|-----|
